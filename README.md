@@ -30,7 +30,8 @@ func main() {
 	// have some statistics
 	fmt.Printf("mean: %v\n", summary.Mean())
 	fmt.Printf("variance: %v\n", summary.Variance())
-}```
+}
+```
 
 Output:
 ```
