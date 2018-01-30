@@ -32,8 +32,8 @@ func TestSimple(t *testing.T) {
 
 // examples
 
-func ExampleSimple() {
-	var summary Summary = MakeSummary()
+func ExampleSummary() {
+	summary := MakeSummary() // type: sstats.Summary
 	summary.Meet(8)
 	summary.Meet(10)
 	summary.Meet(12)
@@ -55,11 +55,11 @@ func (s *Summary) checkStats(t *testing.T, min float64, max float64, count int64
 	pass = pass && s.Mean() == mean
 	pass = pass && s.Variance() == variance
 	if !pass {
-		t.Errorf("min: %v %v, max: %v %v, count: %v %v, mean: %v %v, variance: %v %v",
-		         min, s.Min(),
-		         max, s.Max(),
-		         count, s.Count(),
-		         mean, s.Mean(),
-		         variance, s.Variance())
+		t.Errorf( "min: %v %v, max: %v %v, count: %v %v, mean: %v %v, variance: %v %v",
+		          min, s.Min(),
+		          max, s.Max(),
+		          count, s.Count(),
+		          mean, s.Mean(),
+		          variance, s.Variance() )
 	}
 }
