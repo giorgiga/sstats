@@ -138,9 +138,3 @@ func eq(a []float64, b []float64) bool {
 	for i := range a { if a[i] != b[i] { return false } }
 	return true
 }
-
-func clone(v []float64) ([]float64) {
-	r := make([]float64, len(v))
-	copy(r,v)
-	return r
-}
