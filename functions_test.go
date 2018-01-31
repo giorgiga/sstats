@@ -1,6 +1,9 @@
 package sstats
 
 import (
+	"math"
+	"math/rand"
+	"sort"
 	"testing"
 )
 
@@ -37,3 +40,32 @@ func TestMaxEq(t *testing.T) {
 	i,_ := Max(0,0,0)
 	if i != 0 { t.Errorf("wrong index") }
 }
+
+func TestMedianEven(t *testing.T) {
+	m := Median(0,2)
+	if m != 1 { t.Errorf("wrong median (%v)", m) }
+}
+
+func TestMedianOdd(t *testing.T) {
+	m := Median(0,2,100)
+	if m != 2 { t.Errorf("wrong median (%v)", m) }
+}
+
+func TestMedianRandom(t *testing.T) {
+	lengths := [...]int{ 30, 31, 1000, 1001 }
+	rng := rand.New(rand.NewSource(0))
+	for tcase,l := range lengths {
+		values := make([]float64, l)
+		for i := range values { values[i] = rng.Float64() }
+		actual := Median(values...)
+		sort.Float64s(values)
+		expected := math.NaN()
+		if l % 2 == 0 {
+			expected = (values[l/2] + values[l/2-1]) / 2
+		} else {
+			expected = values[l/2]
+		}
+		if expected != actual { t.Errorf("case %v: expected %v but got %v", tcase+1, expected, actual) }
+	}
+}
+
