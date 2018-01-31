@@ -32,58 +32,49 @@ func Max(values ...float64) (int,float64) {
 // Returns NaN if called with an empty slice.
 func Median(values... float64) float64 {
 	sz := len(values)
-	if (sz == 0) { return math.NaN() }
-	i := sz/2 // if even, we want the mean of indexes i and i-1 (eg: size is 4 -> we want indexes 1 and 2 and i = 2)
-	          // if odd, we just want index i (eg: size is 5 -> we want index 3 and i = 3)
-	return _median(values, i, sz % 2 == 0)
+	switch sz {
+		case 0:  return math.NaN()
+		case 1:  return values[0]
+		default: return findIth(values, sz/2, sz % 2 == 0)
+	}
 }
 
-func _median(values []float64, i int, domean bool) (float64) { // domean: if we should return the mean of [i] and [i-1]
-	// fmt.Printf("looking for #%v in %v (domean? %v)\n", i, values, domean)
-	sz := len(values)
-
-	// let's pick a pivot and run a round of quick sort
-
-	pi := sz/2 // pivot index (will be overwritten)
-
-	{
-		pv := values[pi] // pivot value, for reference
-		values[pi], values[sz-1] = values[sz-1], values[pi] // park pivot in the rightmost position
-		l := 0 // initial index for left
-		for i, x := range values {
-			if x < pv { // elements smaller than the pivot go to the left
-				values[i], values[l] = values[l], values[i]
-				l++
-			}
-		}
-		pi = l
-		values[pi], values[sz-1] = values[sz-1], values[pi] // move the pivot after the last "left" element
+// the domean parameter holds wheter  initially we had an even or odd number of values:
+// if size is even (domean = true), we want the mean of indexes i and i-1 (eg: size is 4 -> i = 2 but we want them mean of indexes 1 and 2)
+// if size is odd (domean = false), we just want index i (eg: size is 5 -> we just want index 3) )
+func findIth(values []float64, i int, domean bool) (float64) {
+	pi := qSortRoundR(values, len(values)/2)
+	// the pivot values[pi] now has pi elements <= than itself, all to its left
+	//    ie: values is arranged like [<<<<][====P][>>>>]
+	if i < pi { // both i and i-1 are to the left of pi
+		return findIth(values[:pi], i, domean) // discard from pi rightwards and recurse
+	} else if pi < i { // i is to the right of pi and i-1 is not left of pi (at worst, it's pi)
+		return findIth(values[pi:], i - pi, domean)  // discard leftwards of pi (keep pi) and recurse
+	} else if domean { // i == pi, but we must search for the value at i-1 too
+		// we could recurse:
+		//     prev = findIth(values, i-1)
+		// but what we want is in fact the max value to the left of i
+		_,prev := Max(values[:i]...)
+		return ( values[i] + prev ) / 2
+	} else {  // i == pi and we don't care about i-1
+		return values[i]
 	}
+}
 
-	// at this point the pivot has pi elements smaller than itself, and they are all to its left
-
-	{
-		pv := values[pi]
-		for pi+1 < sz && pv == values[pi+1] { pi ++ }
-	}
-
-	if i < pi {
-		// both i and i-1 are to the left of pi -> discard from pi rightwards and recurse
-		return _median(values[:pi], i, domean)
-	} else if i > pi {
-		// i is to the right of pi and i-1 is not left of pi (at worst, it's pi) -> discard leftwards of pi and recurse
-		return _median(values[pi:], i - pi, domean)
-	} else { // i == pi
-		if domean {
-				// we must search for the value at i-1
-				// we could recurse _median(values, i-1), but really
-				// what we want is in fact the max value to the left of i
-				_,prev := Max(values[:i]...)
-				return ( values[i] + prev ) / 2
-		} else {
-				return values[pi]
+// qSortRoundR sorts "big" elements to the right of the pivot
+//    ie: it arranges values like [<<<<][====P][>>>>]
+// Takes the index of the pivot and returns its new index after the sort.
+func qSortRoundR(values []float64, pivot int) (int) {
+	// park pivot in the leftmost position
+	values[pivot], values[0] = values[0], values[pivot]
+	right := len(values) -1
+	for i := right; i > 0; i-- {
+		if values[i] > values[0] {
+			values[i], values[right] = values[right], values[i]
+			right--
 		}
 	}
-
-	panic("reached unreachable code")
+	// move pivot to position right (1 left of where the last "big" element was moved)
+	values[right], values[0] = values[0], values[right]
+	return right
 }
