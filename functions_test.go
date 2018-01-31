@@ -69,3 +69,8 @@ func TestMedianRandom(t *testing.T) {
 	}
 }
 
+func TestMedianDoesntLoopForever(t *testing.T) {
+	// in the initial implementation, this would loop forever
+	m := Median(0,0,0,1,1)
+	if m != 0 { t.Errorf("wrong median (%v)", m) }
+}

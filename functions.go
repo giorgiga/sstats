@@ -59,7 +59,13 @@ func _median(values []float64, i int, domean bool) (float64) { // domean: if we 
 		pi = l
 		values[pi], values[sz-1] = values[sz-1], values[pi] // move the pivot after the last "left" element
 	}
+
 	// at this point the pivot has pi elements smaller than itself, and they are all to its left
+
+	{
+		pv := values[pi]
+		for pi+1 < sz && pv == values[pi+1] { pi ++ }
+	}
 
 	if i < pi {
 		// both i and i-1 are to the left of pi -> discard from pi rightwards and recurse
